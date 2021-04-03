@@ -16,10 +16,6 @@ mongoose.connect('mongodb://localhost:27017/dream-team', {
 });
 
 const playerSchema = new mongoose.Schema({
-    team: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Team',
-    },
     name: String,
     team: String,
     position: String,
