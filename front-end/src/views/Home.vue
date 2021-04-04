@@ -25,7 +25,7 @@
             <h1>Current Team</h1>
           </header>
           <div class = "team-player-list">
-          <div v-for="player in team" :key="player.id">
+          <div v-for="player in team" :key="player._id">
             <div class = "team-flex">
               <div class = "player-name">
                 <p>{{ player.name }}</p>
@@ -58,6 +58,7 @@
 
 
 <script>
+import axios from 'axios';
 import PlayerList from "../components/PlayerList.vue";
 export default {
   name: 'Home',
@@ -66,12 +67,13 @@ export default {
   },
   data(){
     return{
-      searchText: ''
+      searchText: '',
+      playerList: [],
     }
   },
   computed: {
     players(){
-      return this.$root.$data.players.filter(player => player.name.toLowerCase().search(this.searchText.toLowerCase()) >= 0);
+      return this.playerList.filter(player => player.name.toLowerCase().search(this.searchText.toLowerCase()) >= 0);
     },
     team: function(){
         return this.$root.$data.currentTeam;
@@ -80,17 +82,37 @@ export default {
         let num =  5 - this.$root.$data.currentTeam.length;
         return num
     }
-    // currentTeam(player){
-    //   this.currentTeam.push(player)
-    // }
+  },
+  created() {
+    //this.addPlayers();
+    this.getPlayers();
   },
   methods: {
     removePlayer(player){
       this.$root.$data.currentTeam = this.$root.$data.currentTeam.filter(listPlayer => player.id !== listPlayer.id);
     },
 
+    // FUNCTION FOR ADDING ALL PLAYERS TO DATABASE
+    // async addPlayers(){
+    //   try{
+    //     let response = await axios.post('/api/players', {
+    //       playerList: this.$root.$data.players,
+    //     });
+    //     return true;
+    //   } catch (error){
+    //     console.log(error);
+    //   }
+    // }
+    async getPlayers(){
+      try{
+        let response = await axios.get('api/players');
+        this.playerList = response.data;
+        return true;
+      } catch (error){
+        console.log(error);
+      }
+    },
   },
-
 }
 </script>
 

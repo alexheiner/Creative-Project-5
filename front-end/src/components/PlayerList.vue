@@ -4,7 +4,7 @@
       <header>
         <h1>Players List</h1>
       </header>
-            <router-link class="player" v-for="player in players" :key="player.id" :to="'/player-info/' + player.id">
+            <router-link class="player" v-for="player in players" :key="player._id" :to="'/player-info/' + player._id">
         <div class="row">
           <div class = "row-flex-wrap">
               <div class = "row-flex">
@@ -41,17 +41,17 @@
 
 <script>
 export default {
-  methods: {
+  name: 'PlayerList',
+  props: {
+    players: Array
+  },
+    methods: {
     // add(product){
     //   this.$root.$data.cart.push(product);
     // }
 
   },
 
-  name: 'PlayerList',
-  props: {
-    players: Array
-  },
   computed: {
     // addToTeam(player){
     //   this.$root.$data.players.currentTeam.push(player)

@@ -24,7 +24,7 @@
         <div class = "stats-flex">
             <div class = "stats-FG">
                 <p>FG%</p>
-                <p>{{ player.stats.fieldGoal }}%</p>
+                <p>{{ player['stats'].fieldGoal }}%</p>
             </div> 
             <div class = "stats-AST">
                 <p>AST</p>
@@ -53,18 +53,27 @@
 </template>
 
 <script>
+import axios from 'axios';
 // @ is an alias to /src
 export default {
-  name: 'Home',
+  name: 'PlayerInfo',
   data() {
     return {
       amount: 0,
       player: {},
       message: '',
+      hasPlayer: false,
+
     } 
   },
+  // NEED TO GET ID FROM URL
   created() {
-    this.player = this.$root.$data.players.find(player => player.id === parseInt(this.$route.params.id));
+    // let id = parseInt(this.$route.params.player._id);
+    // console.log(id);
+    this.player = {};
+    let id = this.$route.params.id;
+    this.getPlayer(id);
+    this.hasPlayer = true;
   },
   methods: {
     addToTeam(){
@@ -85,8 +94,19 @@ export default {
         error.style.visibility = "visible";
         this.message = "You already have the maximum of 5 players in your team";
       }
+    },
+
+    async getPlayer(id){
+      try {
+        let response = await axios.get("/api/players/" + id);
+        this.player = response.data;
+        console.log(response);
+        return true;
+      } catch(error){
+        console.log(error);
+      }
     }
-  }
+  },
 }
 
 
