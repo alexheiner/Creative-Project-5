@@ -9,6 +9,7 @@ let data = {
   currentTeam: {
     teamName: "Current Team",
     players: [],
+    player: {},
   },
 }
 

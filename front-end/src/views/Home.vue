@@ -93,6 +93,7 @@
           </div>
         </div>
         <div v-if="this.$root.$data.currentTeam.teamName === 'Current Team'">
+
           <div class = "team-name" id = "team-name-div-ID">
             <p>Enter a team name to save your team!</p>
             <div id = "error-message-new-team">
@@ -198,7 +199,7 @@ export default {
         }
         this.newTeamName = '';
         this.$root.$data.currentTeam._id = response.data._id;
-        this.hideSaveTeamInput();
+        //this.hideSaveTeamInput();
         this.saveTeam();
       }
       else{
@@ -228,7 +229,7 @@ export default {
         }
         this.$root.$data.currentTeam = response.data;
         this.searchTeam = '';
-        this.hideSaveTeamInput();
+        //this.hideSaveTeamInput();
         return true;
       }
       catch(error){
@@ -240,10 +241,11 @@ export default {
 
     clearCurrentTeam(){
       this.$root.$data.currentTeam = {
-        teamName: "Current Team",
+        teamName: 'Current Team',
         players: [],
       };
-      this.displaySaveTeamInput();
+      location.reload();
+      //this.displaySaveTeamInput();
     },
 
     hideErrorNewTeam(){
@@ -270,17 +272,16 @@ export default {
         document.getElementById("new-name-ID").style.visibility = "hidden";
     },
 
-    displaySaveTeamInput(){
-        document.getElementById("team-name-div-ID").style.display = "block";
-    },
+    // displaySaveTeamInput(){
+    //     document.getElementById("team-name-div-ID").style.display = "block";
+    // },
 
-    hideSaveTeamInput(){
-        document.getElementById("team-name-div-ID").style.display = "none";
-    },
+    // hideSaveTeamInput(){
+    //     document.getElementById("team-name-div-ID").style.display = "none";
+    // },
 
     async editTeamName(){
       let teamId = this.$root.$data.currentTeam._id;
-      console.log(teamId);
       try {
         let response = await axios.put(`/api/team/${teamId}` , {
           teamName: this.newTeamName,
@@ -288,7 +289,7 @@ export default {
         this.newTeamName = '';
         this.$root.$data.currentTeam = response.data;
         this.hideEdit();
-        return true;
+        // return true;
       }
       catch (error){
         console.log(error);
@@ -297,7 +298,6 @@ export default {
 
     async deleteTeam(){
       let teamId = this.$root.$data.currentTeam._id;
-      console.log(teamId);
       try {
         await axios.delete(`/api/team/${teamId}`);
         this.clearCurrentTeam();

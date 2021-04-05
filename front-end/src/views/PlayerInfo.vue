@@ -24,7 +24,7 @@
         <div class = "stats-flex">
             <div class = "stats-FG">
                 <p>FG%</p>
-                <p>{{ player['stats'].fieldGoal }}%</p>
+                <p>{{ player.stats.fieldGoal }}%</p>
             </div> 
             <div class = "stats-AST">
                 <p>AST</p>
@@ -60,19 +60,29 @@ export default {
   data() {
     return {
       amount: 0,
-      player: {},
+      // proxy player until real one is loaded
+      player: {
+        name: '',
+        team: '',
+        position: '',
+        stats: {
+            fieldGoal: 0,
+            assists: 0,
+            rebounds: 0,
+            steals: 0
+        },
+        rating: 0,
+        image: 'proxy-player',
+      },
       message: '',
       hasPlayer: false,
-
     } 
   },
   // NEED TO GET ID FROM URL
   created() {
     // let id = parseInt(this.$route.params.player._id);
     // console.log(id);
-    this.player = {};
-    let id = this.$route.params.id;
-    this.getPlayer(id);
+    this.getPlayer();
     this.hasPlayer = true;
   },
   methods: {
@@ -96,9 +106,9 @@ export default {
       }
     },
 
-    async getPlayer(id){
+    async getPlayer(){
       try {
-        let response = await axios.get("/api/players/" + id);
+        let response = await axios.get(`/api/players/${this.$route.params.id}`);
         this.player = response.data;
         return true;
       } catch(error){
