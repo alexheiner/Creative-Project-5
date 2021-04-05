@@ -98,42 +98,100 @@ app.get('/api/players/:id', async (req, res) => {
 
 app.post('/api/team', async (req,res) => {
     let teamName = req.body.teamName;
-    let newTeam = new Team({
+    let team = await Team.findOne({
         teamName: teamName,
-        players: [],
-    })
-    try{
-        await newTeam.save();
-    } catch (error){
-        console.log(error);
-        res.sendStatus(500);
+    });
+    if(team){
+        res.sendStatus(404);
+        return;
     }
-    res.send(newTeam);
+    else{
+        let newTeam = new Team({
+            teamName: teamName,
+            players: [],
+        })
+    
+        try{
+            await newTeam.save();
+        } catch (error){
+            console.log(error);
+            res.sendStatus(500);
+        }
+        res.send(newTeam);
+    }
 });
 
 app.post('/api/team/:id/players', async (req,res) => {
-    playerList = req.body.playerList;
+    let playerList = req.body.playerList;
     try {
         let team = await Team.findOne({
             _id: req.params.id,
-        })
+        }).populate('players');
         if(!team){
             res.sendStatus(404);
             return;
         }
         let playerArr = team.players;
-        console.log(playerArr);
-        for(let i = 0; i < playerList.length; i++){
-            console.log(playerList[i]);
-            playerArr.push(playerList[i])
+        if(playerArr.length > 0){
+            for(let i = 0; i < playerList.length; i++){
+                for(let j = 0; j < playerArr.length; j++){
+                    if(j === playerArr.length - 1 && playerList[i]._id !== playerArr[j]._id){
+                        playerArr.push(playerList[i])
+                    }
+                }
+            }
+        }
+        else {
+            for(let i = 0; i < playerList.length; i++){
+                playerArr.push(playerList[i])
+            }
         }
         await team.save();
-        res.send(200);
+        res.send(team);
+        return;
     } catch(error){
         res.sendStatus(500);
         console.log(error);
     }
+});
 
+app.get('/api/team/:name', async (req, res) => {
+    try{
+        let team = await Team.findOne({
+            teamName: req.params.name,
+        }).populate('players');
+        if(!team){
+            res.sendStatus(404);
+            return;
+        }
+        res.send(team);
+    } catch (error){
+        console.log(error);
+    }
+});
+
+app.put('/api/team/:id', async (req, res) => {
+    try{
+        let team = await Team.findOne({
+            _id: req.params.id,
+        }).populate('players');
+        team.teamName = req.body.teamName;
+        await team.save();
+        res.send(team);
+    } catch (error){
+        console.log(error);
+    }
+});
+
+app.delete('/api/team/:id', async (req, res) => {
+    try{
+        let team = await Team.deleteOne({
+            _id: req.params.id,
+        });
+        res.sendStatus(200);
+    } catch (error){
+        console.log(error);
+    }
 });
 
 app.listen(3000, () => console.log('Server listening on port 3000!'));

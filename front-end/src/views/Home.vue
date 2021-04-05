@@ -11,13 +11,26 @@
         <li>When you have selected your team click "Play Opponent" to face off against your opponent</li>
         <li>You can modify your team anytime by removing them from the "Current Team" list</li>
       </ol>
+
+      <div class = "load-prev-team">
+        <header>
+          <h1>Want to reload a previously used team?</h1>
+        </header>
+        <div class = "load-team-content">
+          <p>Search for your team by entering the team name below</p>
+          <div id = "error-message">
+            <h3>Team does not exist</h3>
+          </div>
+          <div class = "search-input">
+            <input v-model="searchTeam" type="text" id = "search-team" placeholder="Previous Team"/>
+            <button @click="loadTeam()">Load Team</button>
+          </div>
+        </div>
+      </div>
+
     </div>
     <div class = "search">
       <input v-model="searchText" id = "search" placeholder="Player's Name" />
-    </div>
-    <div class = "team-name">
-      <p>Enter a team name to use your team again!</p>
-      <input v-model="teamName" type = "text" id = "team-name" placeholder="Team Name"/>
     </div>
     <div class = "player-flex">
       <div class = "player-list">
@@ -25,9 +38,16 @@
       </div>
       <div class = "team-list">
         <div class = "team-list-wrap">
-          <header class = "team-header">
-            <h1>Current Team</h1>
-          </header>
+          <div v-if="this.$root.$data.currentTeam.teamName === 'Current Team'">
+            <header class = "team-header">
+              <h1>{{ this.$root.$data.currentTeam.teamName }}</h1>
+            </header>
+          </div>
+          <div v-else>
+            <header class = "team-header">
+              <h1>Team: {{ this.$root.$data.currentTeam.teamName }}</h1>
+            </header>
+          </div>
           <div class = "team-player-list">
             <div v-for="player in team" :key="player._id">
               <div class = "team-flex">
@@ -40,22 +60,63 @@
               </div>
               <hr>
             </div>
-          <div class = "saveTeam">
-            <button @click="saveTeam()">Save my team!</button>
-          </div>
           </div>
         </div>
         <div class = "play">
           <div class = "add-teams-message">
             <p>You need to add {{ teamsLeft }} to play!</p>
           </div>
-          <div v-if="teamsLeft > 0" class = "disabled-btn center">
-              <button disabled id = "play">Play Opponent</button>
+          <div class = "btn-flex">
+            <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'">
+              <div class = "save-team-btn">
+                <button @click="clearCurrentTeam()">New Team</button>
+              </div>
+            </div>
+            <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'">
+              <div class = "save-team-btn">
+                <button @click="saveTeam()">Save my team!</button>
+              </div>
+            </div>
+            <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'">
+              <div class = "edit-name-btn">
+                <button @click="displayEdit()">Edit team</button>
+              </div>
+            </div>
+            <div v-if="teamsLeft > 0" class = "disabled-btn center">
+                <button disabled id = "play">Play Opponent</button>
+            </div>
+            <div v-if="teamsLeft == 0" class = "enabled-btn center">
+              <router-link to="/play">
+                <button id = "play">Play Opponent</button>
+              </router-link>
+            </div>
           </div>
-          <div v-if="teamsLeft == 0" class = "enabled-btn center">
-            <router-link to="/play">
-              <button id = "play">Play Opponent</button>
-            </router-link>
+        </div>
+        <div v-if="this.$root.$data.currentTeam.teamName === 'Current Team'">
+          <div class = "team-name" id = "team-name-div-ID">
+            <p>Enter a team name to save your team!</p>
+            <div id = "error-message-new-team">
+              <h3>{{ newTeamErrorMsg }}</h3>
+            </div>
+            <div class = "input-save-flex">
+              <div class = "new-team-input">
+                <input v-model="newTeamName" type = "text" id = "team-name" placeholder="Team Name"/>
+              </div>
+              <div class = "save-new-team-btn">
+                <button @click="newTeam()">Save New Team</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'">
+          <div class = "new-name-input" id = "new-name-ID">
+            <p>Change team name</p>
+            <input v-model="newTeamName" type = "text" id = "new-name-input" placeholder="New Team Name"/>
+            <button @click="editTeamName()">Save</button>
+            <button @click="hideEdit()">Cancel</button>
+            <div class = "delete-team">
+              <button @click="deleteTeam()">Delete Team</button>
+            </div>
           </div>
         </div>
       </div>
@@ -75,8 +136,11 @@ export default {
   data(){
     return{
       searchText: '',
-      teamName: '',
+      newTeamName: '',
       playerList: [],
+      searchTeam: '',
+      currentTeamHolder: '',
+      newTeamErrorMsg: '',
     }
   },
   computed: {
@@ -84,51 +148,169 @@ export default {
       return this.playerList.filter(player => player.name.toLowerCase().search(this.searchText.toLowerCase()) >= 0);
     },
     team: function(){
-        return this.$root.$data.currentTeam;
+        return this.$root.$data.currentTeam.players;
     },
     teamsLeft: function(){
-        let num =  5 - this.$root.$data.currentTeam.length;
+        let num =  5 - this.$root.$data.currentTeam.players.length;
         return num
     }
   },
   created() {
     //this.addPlayers();
+    this.currentTeamHolder = this.$root.$data.currentTeam;
     this.getPlayers();
   },
   methods: {
     removePlayer(player){
-      this.$root.$data.currentTeam = this.$root.$data.currentTeam.filter(listPlayer => player.id !== listPlayer.id);
+      this.$root.$data.currentTeam.players = this.$root.$data.currentTeam.players.filter(listPlayer => player._id !== listPlayer._id);
     },
 
     async saveTeam(){
-      //if(this.teamName !== ''){
-        try {
-          let response = await axios.post('/api/team', {
-            teamName: this.teamName,
-          });
-          console.log(response);
-          let currTeam = response.data;
-          console.log(this.$root.$data.currentTeam);
-          if(this.$root.$data.currentTeam.length > 0){
-            let response2 = await axios.post(`/api/team/${currTeam._id}/players`, {
-              playerList: this.this.$root.$data.currentTeam,
-            });
-            console.log(response2);
-          }
-          return true;
-        } 
-        catch(error){
-          console.log(error);
-        }
-      //}
-      //else{
+      let teamId = this.$root.$data.currentTeam._id;
+      console.log(this.$root.$data.currentTeam.players);
+      try {
+        let response = await axios.post(`/api/team/${teamId}/players`, {
+          playerList: this.$root.$data.currentTeam.players,
+        });
+        this.$root.$data.currentTeam = response.data;
+        return true;
+      } 
+      catch(error){
+        console.log(error);
+      } 
+    },
 
-      //}
+    async newTeam(){
+      if(this.newTeamName !== ''){
+        this.newTeamErrorMsg = '';
+        this.hideErrorNewTeam()
+        let response = '';
+        try {
+            response = await axios.post('/api/team', {
+            teamName: this.newTeamName,
+          });
+        } catch (error){
+          if(error.response.status === 404){
+            this.newTeamErrorMsg = 'This team already exists';
+            this.showErrorNewTeam();
+          }
+          return;
+        }
+        this.newTeamName = '';
+        this.$root.$data.currentTeam._id = response.data._id;
+        this.hideSaveTeamInput();
+        this.saveTeam();
+      }
+      else{
+        this.newTeamErrorMsg = 'Please enter a team name';
+        this.showErrorNewTeam();
+        return true;
+      }
       
     },
 
-    //FUNCTION FOR ADDING ALL PLAYERS TO DATABASE
+    async getPlayers(){
+      try{
+        let response = await axios.get('/api/players');
+        this.playerList = response.data;
+        this.$root.$data.players = response.data;
+        return true;
+      } catch (error){
+        console.log(error);
+      }
+    },
+    async loadTeam(){
+      this.hideErrorTeamDNE();
+      try{
+        let response = await axios.get(`/api/team/${this.searchTeam}`);
+        if(response.data === ''){
+          console.log("here");
+        }
+        this.$root.$data.currentTeam = response.data;
+        this.searchTeam = '';
+        this.hideSaveTeamInput();
+        return true;
+      }
+      catch(error){
+        if(error.response.status === 404){
+          this.showErrorTeamDNE();
+        }
+      }
+    },
+
+    clearCurrentTeam(){
+      this.$root.$data.currentTeam = {
+        teamName: "Current Team",
+        players: [],
+      };
+      this.displaySaveTeamInput();
+    },
+
+    hideErrorNewTeam(){
+      document.getElementById("error-message-new-team").style.visibility = "hidden";
+    },
+
+    showErrorNewTeam(){
+      document.getElementById("error-message-new-team").style.visibility = "visible";
+    },
+
+    hideErrorTeamDNE(){
+      document.getElementById("error-message").style.visibility = "hidden";
+    },
+
+    showErrorTeamDNE(){
+      document.getElementById("error-message").style.visibility = "visible";
+    },
+
+    displayEdit(){
+      document.getElementById("new-name-ID").style.visibility = "visible";
+    },
+
+    hideEdit(){
+        document.getElementById("new-name-ID").style.visibility = "hidden";
+    },
+
+    displaySaveTeamInput(){
+        document.getElementById("team-name-div-ID").style.display = "block";
+    },
+
+    hideSaveTeamInput(){
+        document.getElementById("team-name-div-ID").style.display = "none";
+    },
+
+    async editTeamName(){
+      let teamId = this.$root.$data.currentTeam._id;
+      console.log(teamId);
+      try {
+        let response = await axios.put(`/api/team/${teamId}` , {
+          teamName: this.newTeamName,
+        });
+        this.newTeamName = '';
+        this.$root.$data.currentTeam = response.data;
+        this.hideEdit();
+        return true;
+      }
+      catch (error){
+        console.log(error);
+      }
+    },
+
+    async deleteTeam(){
+      let teamId = this.$root.$data.currentTeam._id;
+      console.log(teamId);
+      try {
+        await axios.delete(`/api/team/${teamId}`);
+        this.clearCurrentTeam();
+        this.hideEdit();
+        return true;
+      }
+      catch (error){
+        console.log(error);
+      }
+    },
+
     /*
+    FUNCTION FOR ADDING ALL PLAYERS TO DATABASE
     async addPlayers(){
       try{
         let response = await axios.post('/api/players', {
@@ -141,15 +323,7 @@ export default {
       }
     },
     */
-    async getPlayers(){
-      try{
-        let response = await axios.get('api/players');
-        this.playerList = response.data;
-        return true;
-      } catch (error){
-        console.log(error);
-      }
-    },
+
   },
 }
 </script>
@@ -157,6 +331,84 @@ export default {
 
 
 <style scoped>
+
+#error-message, #error-message-new-team {
+  visibility: hidden;
+}
+
+#error-message h3, #error-message-new-team h3 {
+  color: red;
+  text-align: center;
+}
+
+.delete-team button {
+  margin: 25px 0 0 0 !important;
+}
+
+.new-name-input {
+  margin-top: 50px;
+  visibility: hidden;
+}
+
+.new-name-input button {
+  margin-left: 25px;
+}
+
+#new-name-input {
+  padding: 10px;
+  border: 1px solid rgb(109, 109, 109);
+  border-radius: 5px;
+}
+
+.input-save-flex {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.save-new-team-btn {
+  margin-left: 50px;
+}
+
+.team-name {
+  margin-top: 50px;
+}
+
+#team-name {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid black;
+}
+
+
+.load-prev-team {
+  margin-top: 100px;
+}
+
+.load-prev-team p{
+  padding: 0 25px
+}
+
+.search-input {
+
+  text-align: center;
+}
+
+.search-input input, .search-input button {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid black;
+}
+
+.search-input button {
+  margin-left: 50px;
+}
+
+.btn-flex {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
 .header-instructs {
   width: max-content;
   margin: 0 auto;
@@ -229,9 +481,11 @@ export default {
   cursor: pointer;
 }
 
-.play button {
-  padding: 15px;
+.play button, .save-team-btn button, .save-new-team-btn button, .edit-name-btn button, .new-name-input button{
+  padding: 10px;
   cursor: pointer;
+  border-radius: 5px;
+  border: 1px solid rgb(109, 109, 109);
 }
 
 button:disabled {

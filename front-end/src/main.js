@@ -6,7 +6,10 @@ Vue.config.productionTip = false
 
 let data = {
   players: mock,
-  currentTeam: [],
+  currentTeam: {
+    teamName: "Current Team",
+    players: [],
+  },
 }
 
 new Vue({

@@ -8,14 +8,14 @@
         <div class = "play-flex">
             <div class = "user-team">
                 <h1>Your Dream Team</h1>
-                <div v-for="player in userTeam" :key="player.id">
+                <div v-for="player in userTeam" :key="player._id">
                   <p>{{player.name}}</p>
                 </div>
             </div>
             <div class = "random-team">
                 <h1>Generated Dream Team</h1>
                 <div v-if="genTeam.length > 0">
-                  <div v-for="player in genTeam" :key="player.id">
+                  <div v-for="player in genTeam" :key="player._id">
                     <p>{{player.name}}</p>
                   </div>
                 </div>
@@ -86,7 +86,7 @@ export default {
       return this.genTeamArr;
     },
     userTeam: function(){
-        return this.$root.$data.currentTeam;
+        return this.$root.$data.currentTeam.players;
     }
   },
 
@@ -109,7 +109,7 @@ export default {
         console.log(num);
         let player = this.$root.$data.players[num];
         let isInList = genPlayers.includes(player); 
-        let isInTeamList = this.$root.$data.currentTeam.includes(player);
+        let isInTeamList = this.$root.$data.currentTeam.players.includes(player);
         if(!isInList && !isInTeamList){
           genPlayers.push(player);
         }
@@ -119,8 +119,8 @@ export default {
 
     // USERS TEAM AVERAGE
     let totalUserRating = 0;
-    for(let i = 0; i < this.$root.$data.currentTeam.length; i++){
-      totalUserRating += this.$root.$data.currentTeam[i].rating;
+    for(let i = 0; i < this.$root.$data.currentTeam.players.length; i++){
+      totalUserRating += this.$root.$data.currentTeam.players[i].rating;
     }
     let aveUserRating = totalUserRating / 5;
     this.userAveRank = aveUserRating;

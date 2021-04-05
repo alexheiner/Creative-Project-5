@@ -80,10 +80,10 @@ export default {
       let error = document.getElementById("error-msg");
       error.style.visibility = "hidden";
       this.message = '';
-      if(this.$root.$data.currentTeam.length < 5){
-        let isInList = this.$root.$data.currentTeam.includes(this.player);
+      if(this.$root.$data.currentTeam.players.length < 5){
+        let isInList = this.$root.$data.currentTeam.players.includes(this.player);
               if(!isInList){
-                this.$root.$data.currentTeam.push(this.player);
+                this.$root.$data.currentTeam.players.push(this.player);
               }
                 else{
                   error.style.visibility = "visible";
@@ -100,7 +100,6 @@ export default {
       try {
         let response = await axios.get("/api/players/" + id);
         this.player = response.data;
-        console.log(response);
         return true;
       } catch(error){
         console.log(error);
