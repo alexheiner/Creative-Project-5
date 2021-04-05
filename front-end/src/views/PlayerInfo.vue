@@ -22,23 +22,23 @@
             </div>
         </div>
         <div class = "stats-flex">
-            <div class = "stats-FG">
+            <div class = "stats-FG border-line">
                 <p>FG%</p>
                 <p>{{ player.stats.fieldGoal }}%</p>
             </div> 
-            <div class = "stats-AST">
+            <div class = "stats-AST border-line">
                 <p>AST</p>
                 <p>{{ player.stats.assists }}</p>
             </div>
-            <div class = "stats-REB">
+            <div class = "stats-REB border-line">
                 <p>REB</p>
                 <p>{{ player.stats.rebounds }}</p>
             </div>  
-            <div class = "stats-STL">
+            <div class = "stats-STL border-line">
                 <p>STL</p>
                 <p>{{ player.stats.steals }}</p>
             </div> 
-            <div class = "stats-rating">
+            <div class = "stats-rating border-line">
                 <p>RATING</p>
                 <p>{{ player.rating }}</p>
             </div> 
@@ -91,14 +91,19 @@ export default {
       error.style.visibility = "hidden";
       this.message = '';
       if(this.$root.$data.currentTeam.players.length < 5){
-        let isInList = this.$root.$data.currentTeam.players.includes(this.player);
-              if(!isInList){
-                this.$root.$data.currentTeam.players.push(this.player);
-              }
-                else{
-                  error.style.visibility = "visible";
-                  this.message = "This player is already in your team";
-                }
+        let isInList = false;
+        for(let i = 0; i < this.$root.$data.currentTeam.players.length; i++){
+          if(this.$root.$data.currentTeam.players[i]._id === this.player._id){
+            isInList = true;
+          }
+        }
+        if(!isInList){
+          this.$root.$data.currentTeam.players.push(this.player);
+        }
+          else{
+            error.style.visibility = "visible";
+            this.message = "This player is already in your team";
+          }
       }
       else {
         error.style.visibility = "visible";
@@ -207,5 +212,24 @@ button:hover {
   text-align: center;
 }
 
+@media (max-width: 600px) {
+  .stats-flex {
+    display: block;
+  }
+
+  .border-line {
+    border-bottom: 1px solid grey;
+  }
+
+  .player-img {
+    margin-right: 0;
+  }
+
+  .add {
+    text-align: center;
+    padding: 15px 0;
+  }
+
+}
 
 </style>

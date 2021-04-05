@@ -19,7 +19,7 @@
         <div class = "load-team-content">
           <p>Search for your team by entering the team name below</p>
           <div id = "error-message">
-            <h3>Team does not exist</h3>
+            <h3>{{ loadTeamMsg }}</h3>
           </div>
           <div class = "search-input">
             <input v-model="searchTeam" type="text" id = "search-team" placeholder="Previous Team"/>
@@ -91,20 +91,24 @@
               </router-link>
             </div>
           </div>
+          <div id = "edit-team-message">
+            <p>{{ editTeamMsg }}</p>
+          </div>
         </div>
         <div v-if="this.$root.$data.currentTeam.teamName === 'Current Team'">
-
-          <div class = "team-name" id = "team-name-div-ID">
-            <p>Enter a team name to save your team!</p>
-            <div id = "error-message-new-team">
-              <h3>{{ newTeamErrorMsg }}</h3>
-            </div>
-            <div class = "input-save-flex">
-              <div class = "new-team-input">
-                <input v-model="newTeamName" type = "text" id = "team-name" placeholder="Team Name"/>
+          <div>
+            <div class = "team-name" id = "team-name-div-ID">
+              <p>Enter a team name to save your team!</p>
+              <div id = "error-message-new-team">
+                <h3>{{ newTeamErrorMsg }}</h3>
               </div>
-              <div class = "save-new-team-btn">
-                <button @click="newTeam()">Save New Team</button>
+              <div class = "input-save-flex">
+                <div class = "new-team-input">
+                  <input v-model="newTeamName" type = "text" id = "team-name" placeholder="Team Name"/>
+                </div>
+                <div class = "save-new-team-btn">
+                  <button @click="newTeam()">Save New Team</button>
+                </div>
               </div>
             </div>
           </div>
@@ -142,6 +146,8 @@ export default {
       searchTeam: '',
       currentTeamHolder: '',
       newTeamErrorMsg: '',
+      editTeamMsg: '',
+      loadTeamMsg: '',
     }
   },
   computed: {
@@ -158,8 +164,9 @@ export default {
   },
   created() {
     //this.addPlayers();
-    this.currentTeamHolder = this.$root.$data.currentTeam;
-    this.getPlayers();
+    //if(this.$root.$data.players.length === 0){
+      this.getPlayers();
+    //}
   },
   methods: {
     removePlayer(player){
@@ -168,12 +175,12 @@ export default {
 
     async saveTeam(){
       let teamId = this.$root.$data.currentTeam._id;
-      console.log(this.$root.$data.currentTeam.players);
       try {
-        let response = await axios.post(`/api/team/${teamId}/players`, {
+        let response = await axios.put(`/api/team/${teamId}/players`, {
           playerList: this.$root.$data.currentTeam.players,
         });
-        this.$root.$data.currentTeam = response.data;
+        this.$root.$data.currentTeam.teamName = response.data.teamName;
+        this.displayTimedEditResponse('Team saved successfully');
         return true;
       } 
       catch(error){
@@ -182,35 +189,36 @@ export default {
     },
 
     async newTeam(){
-      if(this.newTeamName !== ''){
-        this.newTeamErrorMsg = '';
-        this.hideErrorNewTeam()
-        let response = '';
-        try {
-            response = await axios.post('/api/team', {
-            teamName: this.newTeamName,
-          });
-        } catch (error){
-          if(error.response.status === 404){
-            this.newTeamErrorMsg = 'This team already exists';
-            this.showErrorNewTeam();
+      if(this.newTeamName.length > 0){
+        if(this.newTeamName.length < 15){
+          this.newTeamErrorMsg = '';
+          let response = '';
+          try {
+              response = await axios.post('/api/team', {
+              teamName: this.newTeamName,
+            });
+          } catch (error){
+            if(error.response.status === 404){
+              this.displayTimedEditResponse(`Team: ${this.newTeamName} already exists`, true);
+            }
+            return true;
           }
-          return;
+          this.newTeamName = '';
+          this.$root.$data.currentTeam._id = response.data._id;
+          this.saveTeam();
         }
-        this.newTeamName = '';
-        this.$root.$data.currentTeam._id = response.data._id;
-        //this.hideSaveTeamInput();
-        this.saveTeam();
+        else {
+          this.displayTimedEditResponse('Please enter a team name with less than 15 characters', true);
+        }
       }
       else{
-        this.newTeamErrorMsg = 'Please enter a team name';
-        this.showErrorNewTeam();
-        return true;
+        this.displayTimedEditResponse('Please enter a valid team name', true);
       }
       
     },
 
     async getPlayers(){
+      this.loadTeamMsg = '';
       try{
         let response = await axios.get('/api/players');
         this.playerList = response.data;
@@ -221,21 +229,68 @@ export default {
       }
     },
     async loadTeam(){
-      this.hideErrorTeamDNE();
-      try{
-        let response = await axios.get(`/api/team/${this.searchTeam}`);
-        if(response.data === ''){
-          console.log("here");
+      if(this.searchTeam.length > 0){
+        this.hideErrorTeamDNE();
+        try{
+          let response = await axios.get(`/api/team/${this.searchTeam}`);
+          this.$root.$data.currentTeam = response.data;
+          this.displayTimedEditResponse(`Team: ${this.$root.$data.currentTeam.teamName} successfully loaded`, false);
+          this.searchTeam = '';
+          return true;
         }
-        this.$root.$data.currentTeam = response.data;
-        this.searchTeam = '';
-        //this.hideSaveTeamInput();
+        catch(error){
+          if(error.response.status === 404){
+            this.loadTeamMsg = 'This team does not exist';
+            this.showErrorTeamDNE();
+          }
+        }
+      }
+      else {
+        this.loadTeamMsg = 'Please enter a valid team name';
+        this.showErrorTeamDNE();
+        return;
+      }
+    },
+    async editTeamName(){
+      if(this.newTeamName.length > 0){
+        if(this.newTeamName.length < 15){
+          let teamId = this.$root.$data.currentTeam._id;
+          try {
+            let response = await axios.put(`/api/team/${teamId}` , {
+              teamName: this.newTeamName,
+            });
+            this.newTeamName = '';
+            this.$root.$data.currentTeam = response.data;
+            this.displayTimedEditResponse(`Team name successfully changed to ${this.$root.$data.currentTeam.teamName}`, false);
+            this.hideEdit();
+            return true;
+          }
+          catch (error){
+            if(error.response.status === 404){
+              this.displayTimedEditResponse(`Team: ${this.newTeamName} already exists`, true);
+            }
+          }
+        }
+        else {
+          this.displayTimedEditResponse('Please enter a team name with less than 15 characters', true);
+        }
+      }
+      else {
+        this.displayTimedEditResponse('Please enter a valid team name', true);
+      }
+    },
+
+    async deleteTeam(){
+      let teamId = this.$root.$data.currentTeam._id;
+      try {
+        await axios.delete(`/api/team/${teamId}`);
+        this.displayTimedEditResponse(`Team: ${this.$root.$data.currentTeam.teamName} successfully deleted`, false);
+        this.clearCurrentTeam();
+        this.hideEdit();
         return true;
       }
-      catch(error){
-        if(error.response.status === 404){
-          this.showErrorTeamDNE();
-        }
+      catch (error){
+        console.log(error);
       }
     },
 
@@ -244,16 +299,6 @@ export default {
         teamName: 'Current Team',
         players: [],
       };
-      location.reload();
-      //this.displaySaveTeamInput();
-    },
-
-    hideErrorNewTeam(){
-      document.getElementById("error-message-new-team").style.visibility = "hidden";
-    },
-
-    showErrorNewTeam(){
-      document.getElementById("error-message-new-team").style.visibility = "visible";
     },
 
     hideErrorTeamDNE(){
@@ -272,41 +317,18 @@ export default {
         document.getElementById("new-name-ID").style.visibility = "hidden";
     },
 
-    // displaySaveTeamInput(){
-    //     document.getElementById("team-name-div-ID").style.display = "block";
-    // },
-
-    // hideSaveTeamInput(){
-    //     document.getElementById("team-name-div-ID").style.display = "none";
-    // },
-
-    async editTeamName(){
-      let teamId = this.$root.$data.currentTeam._id;
-      try {
-        let response = await axios.put(`/api/team/${teamId}` , {
-          teamName: this.newTeamName,
-        });
-        this.newTeamName = '';
-        this.$root.$data.currentTeam = response.data;
-        this.hideEdit();
-        // return true;
+    displayTimedEditResponse(msg, isBad){
+      this.editTeamMsg = msg;
+      if(isBad){
+        document.getElementById("edit-team-message").style.backgroundColor = "red";
       }
-      catch (error){
-        console.log(error);
+      else {
+        document.getElementById("edit-team-message").style.backgroundColor = "rgb(192, 238, 192)";
       }
-    },
-
-    async deleteTeam(){
-      let teamId = this.$root.$data.currentTeam._id;
-      try {
-        await axios.delete(`/api/team/${teamId}`);
-        this.clearCurrentTeam();
-        this.hideEdit();
-        return true;
-      }
-      catch (error){
-        console.log(error);
-      }
+      document.getElementById("edit-team-message").style.visibility = "visible";
+      setTimeout(function(){
+        document.getElementById("edit-team-message").style.visibility = "hidden";
+      }, 3000)
     },
 
     /*
@@ -322,7 +344,7 @@ export default {
         console.log(error);
       }
     },
-    */
+        */
 
   },
 }
@@ -331,6 +353,17 @@ export default {
 
 
 <style scoped>
+
+#edit-team-message {
+  background-color: rgb(192, 238, 192);
+  border-radius: 5px;
+  margin: 50px 20px 0 20px;
+  min-width: 50%;
+  padding: 15px;
+  text-align: center;
+  visibility: hidden;
+  transition: visibility ease-in 0.5s;
+}
 
 #error-message, #error-message-new-team {
   visibility: hidden;

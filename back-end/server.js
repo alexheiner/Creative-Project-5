@@ -43,6 +43,7 @@ const Team = mongoose.model('Team',teamSchema);
 
 /*
 FUNCTION FOR ADDING ALL PLAYERS TO DATABASE
+*/
 app.post('/api/players', async (req,res) => {
     const playerList = req.body.playerList
     for(let i = 0; i < playerList.length; i++){
@@ -69,7 +70,6 @@ app.post('/api/players', async (req,res) => {
     }
     res.sendStatus(200);
 });
-*/
 
 
 // Get all players from database 
@@ -121,7 +121,7 @@ app.post('/api/team', async (req,res) => {
     }
 });
 
-app.post('/api/team/:id/players', async (req,res) => {
+app.put('/api/team/:id/players', async (req,res) => {
     let playerList = req.body.playerList;
     try {
         let team = await Team.findOne({
@@ -131,21 +131,8 @@ app.post('/api/team/:id/players', async (req,res) => {
             res.sendStatus(404);
             return;
         }
-        let playerArr = team.players;
-        if(playerArr.length > 0){
-            for(let i = 0; i < playerList.length; i++){
-                for(let j = 0; j < playerArr.length; j++){
-                    if(j === playerArr.length - 1 && playerList[i]._id !== playerArr[j]._id){
-                        playerArr.push(playerList[i])
-                    }
-                }
-            }
-        }
-        else {
-            for(let i = 0; i < playerList.length; i++){
-                playerArr.push(playerList[i])
-            }
-        }
+        team.players = playerList;
+
         await team.save();
         res.send(team);
         return;
@@ -171,11 +158,19 @@ app.get('/api/team/:name', async (req, res) => {
 });
 
 app.put('/api/team/:id', async (req, res) => {
+    let newName = req.body.teamName;
     try{
+        let existingTeam = await Team.findOne({
+            teamName: newName,
+        });
+        if(existingTeam){
+            res.sendStatus(404);
+            return;
+        }
         let team = await Team.findOne({
             _id: req.params.id,
         }).populate('players');
-        team.teamName = req.body.teamName;
+        team.teamName = newName;
         await team.save();
         res.send(team);
     } catch (error){

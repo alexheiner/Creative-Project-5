@@ -106,7 +106,6 @@ export default {
 
       while(!isDone){
         let num = Math.floor((Math.random() * max) + min);
-        console.log(num);
         let player = this.$root.$data.players[num];
         let isInList = genPlayers.includes(player); 
         let isInTeamList = this.$root.$data.currentTeam.players.includes(player);
@@ -138,12 +137,20 @@ export default {
     if(aveUserRating > aveGenRating){
       this.userWon = true;
       winnerRatio = aveGenRating / aveUserRating;
-      this.userScore = Math.floor((Math.random() * 110) + 50);
+      let winnerScore = Math.floor((Math.random() * 110) + 50);
+      if(winnerScore > 130){
+        winnerScore -= 30;
+      }
+      this.userScore = winnerScore;
       this.genScore = Math.floor(this.userScore * winnerRatio);
     }
     else {
       winnerRatio = aveUserRating / aveGenRating;
-      this.genScore = Math.floor((Math.random() * 110) + 50);
+      let winnerScore = Math.floor((Math.random() * 110) + 50);
+      if(winnerScore > 130){
+        winnerScore -= 30;
+      }
+      this.genScore = winnerScore;
       this.userScore = Math.floor(this.genScore * winnerRatio);
     }
 
