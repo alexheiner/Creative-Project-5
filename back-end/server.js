@@ -32,7 +32,6 @@ const playerSchema = new mongoose.Schema({
 
 const teamSchema = new mongoose.Schema({
     teamName: String,
-    team: String,
     players: [{type: mongoose.Schema.Types.ObjectId, ref: 'Player'}]
 });
 
@@ -41,8 +40,8 @@ const Player = mongoose.model('Player', playerSchema);
 // Model for items
 const Team = mongoose.model('Team',teamSchema);
 
-/*
 
+/*
 FUNCTION FOR ADDING ALL PLAYERS TO DATABASE
 app.post('/api/players', async (req,res) => {
     const playerList = req.body.playerList
@@ -70,8 +69,8 @@ app.post('/api/players', async (req,res) => {
     }
     res.sendStatus(200);
 });
-
 */
+
 
 // Get all players from database 
 app.get('/api/players/', async (req, res) => {
@@ -95,6 +94,46 @@ app.get('/api/players/:id', async (req, res) => {
         res.sendStatus(500);
         console.log(error);
     }
+});
+
+app.post('/api/team', async (req,res) => {
+    let teamName = req.body.teamName;
+    let newTeam = new Team({
+        teamName: teamName,
+        players: [],
+    })
+    try{
+        await newTeam.save();
+    } catch (error){
+        console.log(error);
+        res.sendStatus(500);
+    }
+    res.send(newTeam);
+});
+
+app.post('/api/team/:id/players', async (req,res) => {
+    playerList = req.body.playerList;
+    try {
+        let team = await Team.findOne({
+            _id: req.params.id,
+        })
+        if(!team){
+            res.sendStatus(404);
+            return;
+        }
+        let playerArr = team.players;
+        console.log(playerArr);
+        for(let i = 0; i < playerList.length; i++){
+            console.log(playerList[i]);
+            playerArr.push(playerList[i])
+        }
+        await team.save();
+        res.send(200);
+    } catch(error){
+        res.sendStatus(500);
+        console.log(error);
+    }
+
 });
 
 app.listen(3000, () => console.log('Server listening on port 3000!'));

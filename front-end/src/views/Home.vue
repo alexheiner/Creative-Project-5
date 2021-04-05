@@ -15,6 +15,10 @@
     <div class = "search">
       <input v-model="searchText" id = "search" placeholder="Player's Name" />
     </div>
+    <div class = "team-name">
+      <p>Enter a team name to use your team again!</p>
+      <input v-model="teamName" type = "text" id = "team-name" placeholder="Team Name"/>
+    </div>
     <div class = "player-flex">
       <div class = "player-list">
         <PlayerList :players="players" />
@@ -25,16 +29,19 @@
             <h1>Current Team</h1>
           </header>
           <div class = "team-player-list">
-          <div v-for="player in team" :key="player._id">
-            <div class = "team-flex">
-              <div class = "player-name">
-                <p>{{ player.name }}</p>
+            <div v-for="player in team" :key="player._id">
+              <div class = "team-flex">
+                <div class = "player-name">
+                  <p>{{ player.name }}</p>
+                </div>
+                <div class = "remove-player" @click="removePlayer(player)">
+                  <h3>X</h3>
+                </div>
               </div>
-              <div class = "remove-player" @click="removePlayer(player)">
-                <h3>X</h3>
-              </div>
+              <hr>
             </div>
-            <hr>
+          <div class = "saveTeam">
+            <button @click="saveTeam()">Save my team!</button>
           </div>
           </div>
         </div>
@@ -68,6 +75,7 @@ export default {
   data(){
     return{
       searchText: '',
+      teamName: '',
       playerList: [],
     }
   },
@@ -92,17 +100,47 @@ export default {
       this.$root.$data.currentTeam = this.$root.$data.currentTeam.filter(listPlayer => player.id !== listPlayer.id);
     },
 
-    // FUNCTION FOR ADDING ALL PLAYERS TO DATABASE
-    // async addPlayers(){
-    //   try{
-    //     let response = await axios.post('/api/players', {
-    //       playerList: this.$root.$data.players,
-    //     });
-    //     return true;
-    //   } catch (error){
-    //     console.log(error);
-    //   }
-    // }
+    async saveTeam(){
+      //if(this.teamName !== ''){
+        try {
+          let response = await axios.post('/api/team', {
+            teamName: this.teamName,
+          });
+          console.log(response);
+          let currTeam = response.data;
+          console.log(this.$root.$data.currentTeam);
+          if(this.$root.$data.currentTeam.length > 0){
+            let response2 = await axios.post(`/api/team/${currTeam._id}/players`, {
+              playerList: this.this.$root.$data.currentTeam,
+            });
+            console.log(response2);
+          }
+          return true;
+        } 
+        catch(error){
+          console.log(error);
+        }
+      //}
+      //else{
+
+      //}
+      
+    },
+
+    //FUNCTION FOR ADDING ALL PLAYERS TO DATABASE
+    /*
+    async addPlayers(){
+      try{
+        let response = await axios.post('/api/players', {
+          playerList: this.$root.$data.players,
+        });
+        console.log(response);
+        return true;
+      } catch (error){
+        console.log(error);
+      }
+    },
+    */
     async getPlayers(){
       try{
         let response = await axios.get('api/players');
@@ -191,7 +229,7 @@ export default {
   cursor: pointer;
 }
 
-button {
+.play button {
   padding: 15px;
   cursor: pointer;
 }
