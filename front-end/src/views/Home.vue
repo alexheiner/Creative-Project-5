@@ -126,6 +126,9 @@
         </div>
       </div>
     </div>
+    <div class = "load-data">
+      <button @click="addPlayers()">Load data</button>
+    </div>
   </div>
 </template>
 
@@ -333,6 +336,7 @@ export default {
 
     /*
     FUNCTION FOR ADDING ALL PLAYERS TO DATABASE
+    */
     async addPlayers(){
       try{
         let response = await axios.post('/api/players', {
@@ -344,8 +348,6 @@ export default {
         console.log(error);
       }
     },
-        */
-
   },
 }
 </script>
@@ -353,6 +355,15 @@ export default {
 
 
 <style scoped>
+
+.load-data  {
+  margin-top: 50px;
+  float: right;
+}
+
+.load-data button {
+  background-color: white;
+}
 
 #edit-team-message {
   background-color: rgb(192, 238, 192);
