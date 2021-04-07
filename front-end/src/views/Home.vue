@@ -340,7 +340,7 @@ export default {
     async addPlayers(){
       try{
         let response = await axios.post('/api/players', {
-          playerList: this.$root.$data.players,
+          playerList: this.$root.$data.mockPlayers,
         });
         console.log(response);
         return true;
