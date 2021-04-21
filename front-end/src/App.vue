@@ -11,7 +11,7 @@
     <router-view/>
     <footer>
       <div class = "github">
-        <h3><a href = "https://github.com/alexheiner/Creative-Project-4.git" target = "_blank">GitHub</a></h3>
+        <h3><a href = "https://github.com/alexheiner/Creative-Project-5.git" target = "_blank">GitHub</a></h3>
       </div>
       <div class = "partner">
         <h3>Partner: Colby McLain</h3>
@@ -48,6 +48,10 @@ body i{
 }
 
 .profile-link i {
+  color: black;
+}
+
+a {
   color: black;
 }
 
