@@ -1,8 +1,5 @@
 <template>
   <div class="build-team">
-    <div v-if="user">
-      <button @click="logout">Logout</button>
-    </div>
     <div class = "header-instructs">
       <header class = "welcome-header" >
         <h1>Wecome to the NBA Dream Team Creator</h1>
@@ -619,5 +616,16 @@ button:disabled {
   }
 
 }
+
+@media (max-width: 383px) {
+
+.search-input button {
+  margin-left: 0;
+}
+
+
+}
+
+
 
 </style>

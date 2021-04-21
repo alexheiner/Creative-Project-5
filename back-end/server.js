@@ -378,7 +378,7 @@ app.get('/api/team/:name', validUser, async (req, res) => {
 });
 
 // get all teams that belong to a user
-app.get('/api/team/:name', validUser, async (req, res) => {
+app.get('/api/team', validUser, async (req, res) => {
   try{
       let team = await Team.find({
           username: req.user.username,
@@ -460,4 +460,4 @@ app.get('/api/games', validUser, async (req, res) => {
 
 
 
-app.listen(3000, () => console.log('Server listening on port 3000!'));
+app.listen(3000, () => console.log('Server listening on port 3003!'));

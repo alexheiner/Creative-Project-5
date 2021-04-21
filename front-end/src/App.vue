@@ -30,12 +30,8 @@
 }
 
 
-#nav .fas {
-  margin-right: 50px;
-  height: 50px;
-}
-
 body i{
+  text-align: center;
   font-size: 40px;
 }
 
