@@ -65,6 +65,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 // @ is an alias to /src
 export default {
   name: 'Play',
@@ -154,10 +155,26 @@ export default {
       this.userScore = Math.floor(this.genScore * winnerRatio);
     }
 
-    // GENERATE WINNERS SCORE
-    
-
-  }
+    // record game that was just played 
+    this.recordGame();
+  },
+  methods: {
+    async recordGame(){
+      try{
+        let gameModel = {
+          userPoints: this.userScore,
+          oppPoints: this.genScore,
+          teamName: this.$root.$data.currentTeam.teamName,
+        }
+        await axios.post("api/games" , {
+          gameModel: gameModel,
+        });
+      }
+      catch(error){
+        console.log(error);
+      }
+    }
+  },
 
 }
 

@@ -50,7 +50,8 @@ const playerSchema = new mongoose.Schema({
 
 const teamSchema = new mongoose.Schema({
     teamName: String,
-    players: [{type: mongoose.Schema.Types.ObjectId, ref: 'Player'}]
+    players: [{type: mongoose.Schema.Types.ObjectId, ref: 'Player'}],
+    username: String,
 });
 
 
@@ -59,13 +60,16 @@ const userSchema = new mongoose.Schema({
     lastName: String,
     username: String,
     password: String,
-    teams: [{type: mongoose.Schema.Types.ObjectId, ref: 'Team'}],
-    games: [{
-        score: String,
-        result: String,
-    }],
 });
 
+const gameSchema = new mongoose.Schema({
+  userPoints: Number,
+  oppPoints: Number,
+  teamName: String,
+  username: String,
+});
+
+const Game = mongoose.model('Game', gameSchema);
 
 const Player = mongoose.model('Player', playerSchema);
 
@@ -307,7 +311,7 @@ app.get('/api/players/:id', async (req, res) => {
     }
 });
 
-app.post('/api/team', async (req,res) => {
+app.post('/api/team', validUser, async (req,res) => {
     let teamName = req.body.teamName;
     let team = await Team.findOne({
         teamName: teamName,
@@ -320,10 +324,12 @@ app.post('/api/team', async (req,res) => {
         let newTeam = new Team({
             teamName: teamName,
             players: [],
+            username: req.user.username,
         })
     
         try{
             await newTeam.save();
+
         } catch (error){
             console.log(error);
             res.sendStatus(500);
@@ -353,10 +359,13 @@ app.put('/api/team/:id/players', async (req,res) => {
     }
 });
 
-app.get('/api/team/:name', async (req, res) => {
+
+// get team by specific team name
+app.get('/api/team/:name', validUser, async (req, res) => {
     try{
         let team = await Team.findOne({
             teamName: req.params.name,
+            username: req.user.username
         }).populate('players');
         if(!team){
             res.sendStatus(404);
@@ -366,6 +375,22 @@ app.get('/api/team/:name', async (req, res) => {
     } catch (error){
         console.log(error);
     }
+});
+
+// get all teams that belong to a user
+app.get('/api/team/:name', validUser, async (req, res) => {
+  try{
+      let team = await Team.find({
+          username: req.user.username,
+      }).populate('players');
+      if(!team){
+          res.sendStatus(404);
+          return;
+      }
+      res.send(team);
+  } catch (error){
+      console.log(error);
+  }
 });
 
 app.put('/api/team/:id', async (req, res) => {
@@ -399,5 +424,40 @@ app.delete('/api/team/:id', async (req, res) => {
         console.log(error);
     }
 });
+
+// GAMES
+app.post('/api/games', validUser, async (req, res) => {
+  let gameModel = req.body.gameModel;
+
+  let newGame = new Game({
+    userPoints: gameModel.userPoints,
+    oppPoints: gameModel.oppPoints,
+    teamName: gameModel.teamName,
+    username: req.user.username,
+  });
+
+  try {
+    await newGame.save();
+  } 
+  catch (error){
+      console.log(error);
+      res.sendStatus(500);
+  }
+});
+
+app.get('/api/games', validUser, async (req, res) => {
+  try {
+    let games = await Game.find({
+      username: req.user.username,
+    });
+    res.send(games);
+  } 
+  catch (error){
+      console.log(error);
+      res.sendStatus(500);
+  }
+});
+
+
 
 app.listen(3000, () => console.log('Server listening on port 3000!'));

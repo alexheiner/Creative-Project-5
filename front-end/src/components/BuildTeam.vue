@@ -1,6 +1,6 @@
 <template>
   <div class="build-team">
-    <div v-if="this.$root.$data.user">
+    <div v-if="user">
       <button @click="logout">Logout</button>
     </div>
     <div class = "header-instructs">
@@ -14,7 +14,7 @@
         <li>When you have selected your team click "Play Opponent" to face off against your opponent</li>
         <li>You can modify your team anytime by removing them from the "Current Team" list</li>
       </ol>
-      <div v-if="this.$root.$data.user">
+      <div v-if="user">
         <div class = "load-prev-team">
           <header>
             <h1>Want to reload a previously used team?</h1>
@@ -41,7 +41,7 @@
       </div>
 
     </div>
-    <div v-if="this.$root.$data.user">
+    <div v-if="user">
       <div class = "search">
         <input v-model="searchText" id = "search" placeholder="Player's Name" />
       </div>
@@ -176,14 +176,15 @@ export default {
     teamsLeft: function(){
         let num =  5 - this.$root.$data.currentTeam.players.length;
         return num
-    }
+    },
+    user() {
+      return this.$root.$data.user;
+    },
   },
   created() {
-    //this.addPlayers();
-    //if(this.$root.$data.players.length === 0){
-      this.getPlayers();
-    //}
+    this.getPlayers();
   },
+
   methods: {
     removePlayer(player){
       this.$root.$data.currentTeam.players = this.$root.$data.currentTeam.players.filter(listPlayer => player._id !== listPlayer._id);
@@ -256,7 +257,7 @@ export default {
         }
         catch(error){
           if(error.response.status === 404){
-            this.loadTeamMsg = 'This team does not exist';
+            this.loadTeamMsg = 'You have not created this team';
             this.showErrorTeamDNE();
           }
         }
