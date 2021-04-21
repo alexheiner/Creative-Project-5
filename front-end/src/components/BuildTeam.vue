@@ -14,116 +14,127 @@
         <li>When you have selected your team click "Play Opponent" to face off against your opponent</li>
         <li>You can modify your team anytime by removing them from the "Current Team" list</li>
       </ol>
-
-      <div class = "load-prev-team">
-        <header>
-          <h1>Want to reload a previously used team?</h1>
-        </header>
-        <div class = "load-team-content">
-          <p>Search for your team by entering the team name below</p>
-          <div id = "error-message">
-            <h3>{{ loadTeamMsg }}</h3>
+      <div v-if="this.$root.$data.user">
+        <div class = "load-prev-team">
+          <header>
+            <h1>Want to reload a previously used team?</h1>
+          </header>
+          <div class = "load-team-content">
+            <p>Search for your team by entering the team name below</p>
+            <div id = "error-message">
+              <h3>{{ loadTeamMsg }}</h3>
+            </div>
+            <div class = "search-input">
+              <input v-model="searchTeam" type="text" id = "search-team" placeholder="Previous Team"/>
+              <button @click="loadTeam()">Load Team</button>
+            </div>
           </div>
-          <div class = "search-input">
-            <input v-model="searchTeam" type="text" id = "search-team" placeholder="Previous Team"/>
-            <button @click="loadTeam()">Load Team</button>
-          </div>
+        </div>
+      </div>
+      <div v-else>
+        <div class = "login-message">
+          <header>
+            <h2>You must login before playing!</h2>
+          </header>
+          <router-link to="/dashboard"><button>Login Here!</button></router-link>
         </div>
       </div>
 
     </div>
-    <div class = "search">
-      <input v-model="searchText" id = "search" placeholder="Player's Name" />
-    </div>
-    <div class = "player-flex">
-      <div class = "player-list">
-        <PlayerList :players="players" />
+    <div v-if="this.$root.$data.user">
+      <div class = "search">
+        <input v-model="searchText" id = "search" placeholder="Player's Name" />
       </div>
-      <div class = "team-list">
-        <div class = "team-list-wrap">
+      <div class = "player-flex">
+        <div class = "player-list">
+          <PlayerList :players="players" />
+        </div>
+        <div class = "team-list">
+          <div class = "team-list-wrap">
+            <div v-if="this.$root.$data.currentTeam.teamName === 'Current Team'">
+              <header class = "team-header">
+                <h1>{{ this.$root.$data.currentTeam.teamName }}</h1>
+              </header>
+            </div>
+            <div v-else>
+              <header class = "team-header">
+                <h1>Team: {{ this.$root.$data.currentTeam.teamName }}</h1>
+              </header>
+            </div>
+            <div class = "team-player-list">
+              <div v-for="player in team" :key="player._id">
+                <div class = "team-flex">
+                  <div class = "player-name">
+                    <p>{{ player.name }}</p>
+                  </div>
+                  <div class = "remove-player" @click="removePlayer(player)">
+                    <h3>X</h3>
+                  </div>
+                </div>
+                <hr>
+              </div>
+            </div>
+          </div>
+          <div class = "play">
+            <div class = "add-teams-message">
+              <p>You need to add {{ teamsLeft }} to play!</p>
+            </div>
+            <div class = "btn-flex">
+              <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'">
+                <div class = "save-team-btn">
+                  <button @click="clearCurrentTeam()">New Team</button>
+                </div>
+              </div>
+              <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'">
+                <div class = "save-team-btn">
+                  <button @click="saveTeam()">Save my team!</button>
+                </div>
+              </div>
+              <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'"> 
+                <div class = "edit-name-btn">
+                  <button @click="displayEdit()">Edit team</button>
+                </div>
+              </div>
+              <div v-if="teamsLeft > 0" class = "disabled-btn center">
+                  <button disabled id = "play">Play Opponent</button>
+              </div>
+              <div v-if="teamsLeft == 0" class = "enabled-btn center">
+                <router-link to="/play">
+                  <button id = "play">Play Opponent</button>
+                </router-link>
+              </div>
+            </div>
+            <div id = "edit-team-message">
+              <p>{{ editTeamMsg }}</p>
+            </div>
+          </div>
           <div v-if="this.$root.$data.currentTeam.teamName === 'Current Team'">
-            <header class = "team-header">
-              <h1>{{ this.$root.$data.currentTeam.teamName }}</h1>
-            </header>
-          </div>
-          <div v-else>
-            <header class = "team-header">
-              <h1>Team: {{ this.$root.$data.currentTeam.teamName }}</h1>
-            </header>
-          </div>
-          <div class = "team-player-list">
-            <div v-for="player in team" :key="player._id">
-              <div class = "team-flex">
-                <div class = "player-name">
-                  <p>{{ player.name }}</p>
+            <div>
+              <div class = "team-name" id = "team-name-div-ID">
+                <p>Enter a team name to save your team!</p>
+                <div id = "error-message-new-team">
+                  <h3>{{ newTeamErrorMsg }}</h3>
                 </div>
-                <div class = "remove-player" @click="removePlayer(player)">
-                  <h3>X</h3>
-                </div>
-              </div>
-              <hr>
-            </div>
-          </div>
-        </div>
-        <div class = "play">
-          <div class = "add-teams-message">
-            <p>You need to add {{ teamsLeft }} to play!</p>
-          </div>
-          <div class = "btn-flex">
-            <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'">
-              <div class = "save-team-btn">
-                <button @click="clearCurrentTeam()">New Team</button>
-              </div>
-            </div>
-            <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'">
-              <div class = "save-team-btn">
-                <button @click="saveTeam()">Save my team!</button>
-              </div>
-            </div>
-            <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'"> 
-              <div class = "edit-name-btn">
-                <button @click="displayEdit()">Edit team</button>
-              </div>
-            </div>
-            <div v-if="teamsLeft > 0" class = "disabled-btn center">
-                <button disabled id = "play">Play Opponent</button>
-            </div>
-            <div v-if="teamsLeft == 0" class = "enabled-btn center">
-              <router-link to="/play">
-                <button id = "play">Play Opponent</button>
-              </router-link>
-            </div>
-          </div>
-          <div id = "edit-team-message">
-            <p>{{ editTeamMsg }}</p>
-          </div>
-        </div>
-        <div v-if="this.$root.$data.currentTeam.teamName === 'Current Team'">
-          <div>
-            <div class = "team-name" id = "team-name-div-ID">
-              <p>Enter a team name to save your team!</p>
-              <div id = "error-message-new-team">
-                <h3>{{ newTeamErrorMsg }}</h3>
-              </div>
-              <div class = "input-save-flex">
-                <div class = "new-team-input">
-                  <input v-model="newTeamName" type = "text" id = "team-name" placeholder="Team Name"/>
-                </div>
-                <div class = "save-new-team-btn">
-                  <button @click="newTeam()">Save New Team</button>
+                <div class = "input-save-flex">
+                  <div class = "new-team-input">
+                    <input v-model="newTeamName" type = "text" id = "team-name" placeholder="Team Name"/>
+                  </div>
+                  <div class = "save-new-team-btn">
+                    <button @click="newTeam()">Save New Team</button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'">
-          <div class = "new-name-input" id = "new-name-ID">
-            <p>Change team name</p>
-            <input v-model="newTeamName" type = "text" id = "new-name-input" placeholder="New Team Name"/>
-            <button @click="editTeamName()">Save</button>
-            <button @click="hideEdit()">Cancel</button>
-            <div class = "delete-team">
-              <button @click="deleteTeam()">Delete Team</button>
+          <div v-if="this.$root.$data.currentTeam.teamName !== 'Current Team'">
+            <div class = "new-name-input" id = "new-name-ID">
+              <p>Change team name</p>
+              <input v-model="newTeamName" type = "text" id = "new-name-input" placeholder="New Team Name"/>
+              <button @click="editTeamName()">Save</button>
+              <button @click="hideEdit()">Cancel</button>
+              <div class = "delete-team">
+                <button @click="deleteTeam()">Delete Team</button>
+              </div>
             </div>
           </div>
         </div>
@@ -365,6 +376,26 @@ export default {
 
 
 <style scoped>
+
+.login-message {
+  margin-top: 150px;
+  text-align: center;
+}
+
+.login-message button {
+  border-radius: 5px;
+  margin-top: 25px;
+  outline: none;
+  border: none;
+  padding: 5px 25px;
+  cursor: pointer;
+  background-color:rgb(138, 207, 138);
+}
+
+.login-message button:hover {
+  background-color:rgb(100, 160, 100);
+
+}
 
 .load-data  {
   margin-top: 50px;

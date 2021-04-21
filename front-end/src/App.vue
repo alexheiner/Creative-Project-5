@@ -1,7 +1,12 @@
 <template>
   <div id="app">
     <div id="nav">
-
+      <div class = "home-link">
+        <router-link to="/"><i class="fas fa-home"></i></router-link>
+      </div>
+      <div class = "profile-link">
+        <router-link to="/dashboard"><i class="fas fa-user"></i></router-link>
+      </div>
     </div>
     <router-view/>
     <footer>
@@ -17,25 +22,39 @@
 
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 
-}
 
 #nav {
   padding: 30px;
+  margin-bottom: 100px;
 }
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
+
+#nav .fas {
+  margin-right: 50px;
+  height: 50px;
 }
 
-#nav a.router-link-exact-active {
-  color: #42b983;
+body i{
+  font-size: 40px;
 }
+
+.home-link{
+  float: left;
+}
+
+.home-link i {
+  color: rgb(138, 207, 138);
+}
+.profile-link{
+
+  float: right;
+}
+
+.profile-link i {
+  color: black;
+}
+
 
 footer{
     height: 300px;
@@ -47,7 +66,6 @@ footer{
     flex-direction: column;
 }
 
-a {
-  color: black;
-}
+
+
 </style>
