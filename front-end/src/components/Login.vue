@@ -1,32 +1,45 @@
 <template>  
   <div class="hero">
+    <h1>Login/Register</h1>
+    <p>Returning user? Login below!<p>
+    <p>Otherwise sign up to get started.</p>
     <div class="heroBox">
+      <div class="flexBox1">
         <form class="pure-form">
-        <fieldset>
-            <legend>Register for an account</legend>
-            <input placeholder="first name" v-model="firstName">
+          <fieldset>
+              <legend>Create an account</legend>
+              <input placeholder="first name" v-model="firstName">
+          </fieldset>
+          <fieldset>
             <input placeholder="last name" v-model="lastName">
-        </fieldset>
-        <fieldset>
-            <input placeholder="username" v-model="username">
+          </fieldset>
+          <fieldset>
+              <input placeholder="username" v-model="username">
+          </fieldset>
+          <fieldset>
             <input type="password" placeholder="password" v-model="password">
-        </fieldset>
-        <fieldset>
-            <button type="submit" class="pure-button pure-button-primary" @click.prevent="register">Register</button>
-        </fieldset>
-        </form>
-        <p v-if="error" class="error">{{error}}</p>
+          </fieldset>
+          <fieldset>
+              <button type="submit" class="pure-button pure-button-primary" @click.prevent="register">Register</button>
+          </fieldset>
+          </form>
+          <p v-if="error" class="error">{{error}}</p>
+      </div>
+      <div class="flexBox2">
         <form class="pure-form space-above">
         <fieldset>
             <legend>Login</legend>
             <input placeholder="username" v-model="usernameLogin">
-            <input type="password" placeholder="password" v-model="passwordLogin">
+        </fieldset>
+        <fieldset>
+          <input type="password" placeholder="password" v-model="passwordLogin">
         </fieldset>
         <fieldset>
             <button type="submit" class="pure-button pure-button-primary" @click.prevent="login">Login</button>
         </fieldset>
         </form>
         <p v-if="errorLogin" class="error">{{errorLogin}}</p>
+      </div>
     </div>
   </div>
 </template> 
@@ -87,23 +100,33 @@ export default {
 </script>
 
 <style scoped>
-.space-above {
-  margin-top: 50px;
-}
 
-h1 {
-  font-size: 28px;
-  font-variant: capitalize;
+.home {
+  margin-top: 0px;
 }
 
 .hero {
   padding: 120px;
+  
+}
+.hero h1, .hero p {
+  text-align: center;
+}
+.heroBox {
+  padding-top: 50px;
+  text-align: center;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
-.heroBox {
-  text-align: center;
+.flexBox1, .flexBox2 {
+  margin: 50px;
+  margin-top: 0px;
+}
+
+button {
+  background-color: rgb(138, 207, 138);
 }
 
 .hero form {
@@ -111,10 +134,11 @@ h1 {
 }
 
 .hero form legend {
-  font-size: 20px;
+  font-size: 22px;
 }
 
 input {
+  font-size: 18px;
   margin-right: 10px;
 }
 
