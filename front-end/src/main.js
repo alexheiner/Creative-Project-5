@@ -11,6 +11,7 @@ let data = {
     teamName: "Current Team",
     players: [],
   },
+  user: null,
 }
 
 new Vue({
